@@ -1,0 +1,14 @@
+node_modules
+dist
+coverage
+*.local
+.env*
+!.env.example
+playwright-report
+test-results
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+# Large generated documents (100 MB – 1 GB) — produced by `npm run generate:docs`, never committed
+public/documents/large/

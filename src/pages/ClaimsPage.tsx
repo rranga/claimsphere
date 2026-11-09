@@ -1,0 +1,131 @@
+import { useQueryClient } from '@tanstack/react-query';
+import { lazy, Suspense, useCallback, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
+import { useCurrentSession } from '@/features/auth';
+import {
+  ClaimsToolbar,
+  DEFAULT_GRID_PARAMS,
+  PagedClaimsGrid,
+  StatCards,
+  toClaimQuery,
+  useGridParams,
+  VirtualClaimsGrid,
+  type ClaimDialogState,
+  type RowActionHandler,
+} from '@/features/claims';
+import { claimDocumentsQuery, prefetchFirstPage } from '@/features/documents';
+import type { Claim, SortField } from '@/shared/api/contracts';
+import { preloadWorkspace } from './workspaceRoute';
+
+const ClaimDialogs = lazy(() => import('@/features/claims/dialogs'));
+
+export interface WorkspaceLocationState {
+  /** Row data from the grid → the workspace header renders instantly, before any fetch. */
+  claim: Claim;
+  /** Grid URL to return to (filters, sort, page). */
+  fromSearch: string;
+}
+
+/** Page = composition root: wires independent features together (grid ↔ document workspace). */
+export function ClaimsPage() {
+  const { user } = useCurrentSession();
+  const [params, updateParams] = useGridParams();
+  const [dialog, setDialog] = useState<ClaimDialogState>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const queryClient = useQueryClient();
+  const query = toClaimQuery(params);
+
+  const onOpen = useCallback(
+    (claim: Claim) => {
+      const state: WorkspaceLocationState = { claim, fromSearch: location.search };
+      void navigate(`/claims/${claim.id}`, { state, viewTransition: true });
+    },
+    [navigate, location.search],
+  );
+
+  /**
+   * Hover/focus intent → warm everything the workspace needs, in parallel:
+   * the route's JS chunk, the documents manifest and the first page's byte ranges.
+   */
+  const onPrefetch = useCallback(
+    (claim: Claim) => {
+      preloadWorkspace();
+      void queryClient.prefetchQuery(claimDocumentsQuery(claim.id)).then(() => {
+        const data = queryClient.getQueryData(claimDocumentsQuery(claim.id).queryKey);
+        const firstFileId = data?.documents[0]?.pages[0]?.fileId;
+        const file = firstFileId ? data.files[firstFileId] : undefined;
+        if (file) void prefetchFirstPage(file);
+      });
+    },
+    [queryClient],
+  );
+
+  const onAction = useCallback<RowActionHandler>((type, claim) => setDialog({ type, claim }), []);
+  const closeDialog = useCallback(() => setDialog(null), []);
+
+  const onSort = useCallback(
+    (field: SortField) =>
+      updateParams({
+        sortBy: field,
+        sortDir: params.sortBy === field && params.sortDir === 'desc' ? 'asc' : 'desc',
+      }),
+    [updateParams, params.sortBy, params.sortDir],
+  );
+  const onClearFilters = useCallback(
+    () => updateParams({ q: '', status: [], priority: [], channel: [] }),
+    [updateParams],
+  );
+
+  const callbacks = { query, onOpen, onPrefetch, onAction, onSort, onClearFilters };
+
+  return (
+    <div className="flex h-full flex-col gap-6 overflow-hidden px-6 py-6 lg:px-10 lg:py-8">
+      <header className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-medium">Hello {user.name.split(' ')[0]} 👋🏼,</h1>
+          <p className="text-muted mt-1 text-sm">
+            {user.title} · {user.region} region
+          </p>
+        </div>
+      </header>
+
+      <StatCards />
+
+      <section
+        aria-labelledby="claims-heading"
+        className="shadow-card flex min-h-[460px] flex-1 flex-col overflow-hidden rounded-3xl bg-white"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-4 px-6 pt-6 pb-4">
+          <div>
+            <h2 id="claims-heading" className="text-xl font-semibold">
+              All Claims
+            </h2>
+            <p className="text-success-500 text-sm">Server-side sort, filter & search</p>
+          </div>
+        </div>
+        <div className="px-6 pb-4">
+          <ClaimsToolbar params={params} onChange={updateParams} />
+        </div>
+
+        {params.view === 'paged' ? (
+          <PagedClaimsGrid
+            {...callbacks}
+            page={params.page}
+            pageSize={params.pageSize}
+            onPageChange={(page) => updateParams({ page })}
+            onPageSizeChange={(pageSize) => updateParams({ pageSize, page: DEFAULT_GRID_PARAMS.page })}
+          />
+        ) : (
+          <VirtualClaimsGrid {...callbacks} />
+        )}
+      </section>
+
+      {dialog && (
+        <Suspense fallback={null}>
+          <ClaimDialogs state={dialog} onClose={closeDialog} />
+        </Suspense>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "fnol-report",
+    "name": "FNOL Report.pdf",
+    "file": "fnol-report.pdf",
+    "pageCount": 12,
+    "sizeBytes": 620080,
+    "pageWidth": 612,
+    "pageHeight": 792
+  },
+  {
+    "id": "medical-records",
+    "name": "Medical Records.pdf",
+    "file": "medical-records.pdf",
+    "pageCount": 160,
+    "sizeBytes": 3025678,
+    "pageWidth": 612,
+    "pageHeight": 792
+  },
+  {
+    "id": "loss-photos",
+    "name": "Loss Photos & Estimates.pdf",
+    "file": "loss-photos.pdf",
+    "pageCount": 48,
+    "sizeBytes": 1541539,
+    "pageWidth": 612,
+    "pageHeight": 792
+  }
+]

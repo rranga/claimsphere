@@ -1,0 +1,7 @@
+dist
+coverage
+public/mockServiceWorker.js
+public/documents
+package-lock.json
+playwright-report
+test-results
