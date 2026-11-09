@@ -4,7 +4,7 @@
  */
 import type { SourceFile } from '@/shared/api/contracts';
 
-export { claimDocumentsQuery, documentKeys } from './api/documentsApi';
+export { claimDocumentsQuery } from './api/documentsApi';
 export { workspaceReducer } from './model/workspaceSlice';
 
 /** Warm the first page of a document; loads the pdf engine chunk on demand. */

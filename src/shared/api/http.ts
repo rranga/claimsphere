@@ -28,10 +28,10 @@ export const configureHttp = (next: HttpConfig) => {
   config = next;
 };
 
-export const apiUrl = (path: string) =>
+const apiUrl = (path: string) =>
   new URL(`${import.meta.env.BASE_URL}api${path}`, window.location.origin).toString();
 
-export interface RequestOptions {
+interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
   body?: unknown;
   signal?: AbortSignal;

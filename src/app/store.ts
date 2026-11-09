@@ -11,6 +11,3 @@ export const createStore = () =>
     reducer: { workspace: workspaceReducer },
     devTools: import.meta.env.DEV,
   });
-
-export type AppStore = ReturnType<typeof createStore>;
-export type RootState = ReturnType<AppStore['getState']>;

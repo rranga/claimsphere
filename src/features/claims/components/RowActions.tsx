@@ -1,6 +1,6 @@
 import { Pencil, Trash2, UserPlus } from 'lucide-react';
 import { memo, type ReactNode } from 'react';
-import { usePermission, useSession } from '@/features/auth';
+import { Can, useSession } from '@/features/auth';
 import type { Claim, ClaimAction } from '@/shared/api/contracts';
 import { Button } from '@/shared/ui/Button';
 import { Tooltip } from '@/shared/ui/Tooltip';
@@ -62,15 +62,12 @@ export const RowActions = memo(function RowActions({
   onAction: RowActionHandler;
 }) {
   const { session } = useSession();
-  const canEdit = usePermission('claim:edit');
-  const canAssign = usePermission('claim:assign');
-  const canDelete = usePermission('claim:delete');
   const userId = session?.user.id ?? '';
   const allowed = (action: ClaimAction) => claim.allowedActions.includes(action);
 
   return (
     <div className="flex items-center justify-end gap-0.5">
-      {canEdit && (
+      <Can permission="claim:edit">
         <ActionButton
           label="Edit claim"
           icon={<Pencil className="size-4" />}
@@ -78,8 +75,8 @@ export const RowActions = memo(function RowActions({
           reason={disabledReason('edit', claim, userId)}
           onClick={() => onAction('edit', claim)}
         />
-      )}
-      {canAssign && (
+      </Can>
+      <Can permission="claim:assign">
         <ActionButton
           label="Assign claim"
           icon={<UserPlus className="size-4" />}
@@ -87,8 +84,8 @@ export const RowActions = memo(function RowActions({
           reason={disabledReason('assign', claim, userId)}
           onClick={() => onAction('assign', claim)}
         />
-      )}
-      {canDelete && (
+      </Can>
+      <Can permission="claim:delete">
         <ActionButton
           label="Delete claim"
           icon={<Trash2 className="size-4" />}
@@ -97,7 +94,7 @@ export const RowActions = memo(function RowActions({
           danger
           onClick={() => onAction('delete', claim)}
         />
-      )}
+      </Can>
     </div>
   );
 });

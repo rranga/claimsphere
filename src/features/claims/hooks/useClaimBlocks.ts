@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react';
 import type { Claim, ClaimPage, ClaimQuery } from '@/shared/api/contracts';
 import { BLOCK_SIZE, claimBlockQuery, claimKeys } from '../api/queries';
 
-export interface ClaimBlocks {
+interface ClaimBlocks {
   /** Total rows matching the query (undefined until the first block arrives). */
   total: number | undefined;
   getRow: (index: number) => Claim | undefined;

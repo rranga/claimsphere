@@ -4,7 +4,7 @@ import type { Claim, SortField } from '@/shared/api/contracts';
 import { formatBytes, formatCurrency, formatDate } from '@/shared/lib/format';
 import { PriorityLabel, StatusBadge } from './ClaimBadges';
 
-export interface ClaimColumn {
+interface ClaimColumn {
   id: string;
   header: string;
   /** Present when the server supports sorting by this column. */

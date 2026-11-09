@@ -65,7 +65,7 @@ export function ensureReady(): Promise<void> {
 }
 
 export const allFiles = () => [...sampleFiles, ...largeFiles];
-export const fileById = (id: string) => allFiles().find((f) => f.id === id);
+const fileById = (id: string) => allFiles().find((f) => f.id === id);
 
 // ---------- Documents (materialized lazily per claim — 25k claims × N docs never sit in memory) ----------
 function documentSpec(claim: ClaimRecord) {

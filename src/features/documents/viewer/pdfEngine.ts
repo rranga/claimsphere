@@ -17,7 +17,7 @@ const MAX_OPEN_DOCUMENTS = 4;
 // ---------------------------------------------------------------------------
 // Network statistics — a tiny external store (consumed with useSyncExternalStore).
 // ---------------------------------------------------------------------------
-export interface FileLoadStats {
+interface FileLoadStats {
   bytesFetched: number;
   requests: number;
   totalBytes: number;
@@ -130,7 +130,7 @@ export function openPdf(file: SourceFile): Promise<PDFDocumentProxy> {
   return promise;
 }
 
-export function evictPdf(fileId: string) {
+function evictPdf(fileId: string) {
   const entry = cache.get(fileId);
   if (!entry) return;
   entry.destroy();

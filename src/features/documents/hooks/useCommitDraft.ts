@@ -10,7 +10,7 @@ import { workspaceActions, type WorkspaceState } from '../model/workspaceSlice';
 import { useWorkspaceDispatch } from '../model/hooks';
 
 const TERMINAL: Job['status'][] = ['succeeded', 'failed', 'cancelled'];
-export const isTerminal = (job: Job | undefined) => !!job && TERMINAL.includes(job.status);
+const isTerminal = (job: Job | undefined) => !!job && TERMINAL.includes(job.status);
 
 /**
  * Commit the draft as ONE long-running server job — PESSIMISTIC by design:

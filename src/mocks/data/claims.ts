@@ -97,7 +97,7 @@ const RISK_BASE: Record<ClaimPriority, number> = { Low: 5, Medium: 30, High: 55,
 const DAY = 86_400_000;
 const NOW = Date.UTC(2026, 10, 9);
 
-export const CLAIM_COUNT = 25_000;
+const CLAIM_COUNT = 25_000;
 
 export function generateClaims(count = CLAIM_COUNT): ClaimRecord[] {
   const rnd = createRandom(20_261_109);

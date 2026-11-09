@@ -171,7 +171,6 @@ export const workspaceReducer = workspaceSlice.reducer;
 
 // ---------- selectors (memoized; components subscribe to the smallest slice they need) ----------
 type RootLike = { workspace: WorkspaceState };
-const selectWorkspace = (state: RootLike) => state.workspace;
 
 export const selectWorkingDocuments = createSelector(
   [(s: RootLike) => s.workspace.base, (s: RootLike) => s.workspace.past],
@@ -191,9 +190,3 @@ export const selectScrollRequest = (s: RootLike) => s.workspace.scrollRequest;
 export const selectPendingOperations = (s: RootLike) => s.workspace.past;
 export const selectCanUndo = (s: RootLike) => s.workspace.past.length > 0;
 export const selectCanRedo = (s: RootLike) => s.workspace.future.length > 0;
-export const selectIsDirty = (s: RootLike) => s.workspace.past.length > 0;
-export const selectDraftMeta = createSelector([selectWorkspace], (w) => ({
-  claimId: w.claimId,
-  baseVersions: w.baseVersions,
-  restoredDraftCount: w.restoredDraftCount,
-}));

@@ -31,7 +31,7 @@ export function saveDraft(
   }
 }
 
-export type DraftRestoreResult =
+type DraftRestoreResult =
   { status: 'none' } | { status: 'restored'; operations: DocumentOperation[] } | { status: 'stale' };
 
 export function loadDraft(claimId: string, documents: ClaimDocument[]): DraftRestoreResult {
