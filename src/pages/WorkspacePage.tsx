@@ -24,7 +24,7 @@ export function WorkspacePage() {
 
   return (
     <div className="flex h-full flex-col">
-      <header className="border-line flex flex-wrap items-center gap-4 border-b bg-white px-6 py-3">
+      <header className="border-line flex flex-wrap items-center gap-x-4 gap-y-2 border-b bg-white px-4 py-3 md:px-6">
         <Link
           to={backTo}
           viewTransition
@@ -75,9 +75,9 @@ function WorkspaceSkeleton() {
     <div
       role="status"
       aria-label="Loading documents"
-      className="grid h-full grid-cols-[248px_minmax(0,1fr)] gap-0 xl:grid-cols-[248px_minmax(0,1fr)_320px]"
+      className="grid h-full grid-cols-1 gap-0 md:grid-cols-[248px_minmax(0,1fr)] xl:grid-cols-[248px_minmax(0,1fr)_320px]"
     >
-      <div className="border-line grid content-start gap-3 border-r bg-white p-4">
+      <div className="border-line hidden content-start gap-3 border-r bg-white p-4 md:grid">
         {Array.from({ length: 3 }, (_, i) => (
           <Skeleton key={i} className="h-10 w-full" />
         ))}

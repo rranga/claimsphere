@@ -1,10 +1,27 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { Check, ChevronDown, Rows3, Search, TableProperties, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { CLAIM_CHANNELS, CLAIM_PRIORITIES, CLAIM_STATUSES } from '@/shared/api/contracts';
+import {
+  CLAIM_CHANNELS,
+  CLAIM_PRIORITIES,
+  CLAIM_STATUSES,
+  type SortDirection,
+  type SortField,
+} from '@/shared/api/contracts';
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 import { cn } from '@/shared/lib/cn';
 import type { GridParams } from '../model/gridParams';
+
+/** The card layout (< 1024 px) has no column headers, so sorting is offered as a select. */
+const SORT_OPTIONS: { field: SortField; dir: SortDirection; label: string }[] = [
+  { field: 'receivedAt', dir: 'desc', label: 'Newest first' },
+  { field: 'receivedAt', dir: 'asc', label: 'Oldest first' },
+  { field: 'amount', dir: 'desc', label: 'Amount: high to low' },
+  { field: 'amount', dir: 'asc', label: 'Amount: low to high' },
+  { field: 'priority', dir: 'desc', label: 'Priority: highest first' },
+  { field: 'riskScore', dir: 'desc', label: 'Risk: highest first' },
+  { field: 'claimant', dir: 'asc', label: 'Claimant A–Z' },
+];
 
 interface FilterMenuProps<T extends string> {
   label: string;
@@ -79,7 +96,7 @@ export function ClaimsToolbar({ params, onChange }: Props) {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <label className="relative">
+      <label className="relative w-full sm:w-auto">
         <span className="sr-only">Search claims</span>
         <Search
           className="text-muted pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
@@ -90,7 +107,7 @@ export function ClaimsToolbar({ params, onChange }: Props) {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Claim #, policy or claimant"
-          className="bg-canvas placeholder:text-subtle focus:border-brand-500 h-9 w-64 rounded-lg border border-transparent pr-3 pl-9 text-xs focus:bg-white focus:outline-none"
+          className="bg-canvas placeholder:text-subtle focus:border-brand-500 h-9 w-full rounded-lg border border-transparent pr-3 pl-9 text-xs focus:bg-white focus:outline-none sm:w-64"
         />
       </label>
       <FilterMenu
@@ -111,6 +128,28 @@ export function ClaimsToolbar({ params, onChange }: Props) {
         selected={params.channel}
         onChange={(channel) => onChange({ channel })}
       />
+      <label className="lg:hidden">
+        <span className="sr-only">Sort by</span>
+        <select
+          value={`${params.sortBy}:${params.sortDir}`}
+          onChange={(event) => {
+            const [sortBy, sortDir] = event.target.value.split(':') as [SortField, SortDirection];
+            onChange({ sortBy, sortDir });
+          }}
+          className="border-line bg-canvas text-ink h-9 rounded-lg border px-2 text-xs"
+        >
+          {!SORT_OPTIONS.some((o) => o.field === params.sortBy && o.dir === params.sortDir) && (
+            <option value={`${params.sortBy}:${params.sortDir}`}>
+              Sorted by {params.sortBy} ({params.sortDir})
+            </option>
+          )}
+          {SORT_OPTIONS.map((o) => (
+            <option key={`${o.field}:${o.dir}`} value={`${o.field}:${o.dir}`}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </label>
       {(filterCount > 0 || params.q) && (
         <button
           type="button"

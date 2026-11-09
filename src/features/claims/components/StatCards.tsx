@@ -14,8 +14,8 @@ interface StatProps {
 
 function Stat({ label, value, hint, icon: Icon }: StatProps) {
   return (
-    <div className="not-first:border-line short:py-3 flex items-center gap-4 px-6 py-5 md:not-first:border-l">
-      <span className="bg-success-50 text-success-500 short:size-11 flex size-14 shrink-0 items-center justify-center rounded-full">
+    <div className="short:py-3 flex items-center gap-4 bg-white px-4 py-3 sm:px-6 sm:py-5">
+      <span className="bg-success-50 text-success-500 short:size-11 hidden size-14 shrink-0 items-center justify-center rounded-full sm:flex">
         <Icon className="size-6" aria-hidden="true" />
       </span>
       <div>
@@ -23,9 +23,9 @@ function Stat({ label, value, hint, icon: Icon }: StatProps) {
         {value === undefined ? (
           <Skeleton className="mt-1 h-7 w-20" />
         ) : (
-          <p className="text-2xl font-semibold tracking-tight">{formatNumber(value)}</p>
+          <p className="text-xl font-semibold tracking-tight sm:text-2xl">{formatNumber(value)}</p>
         )}
-        <p className="text-muted text-[11px]">{hint}</p>
+        <p className="text-muted hidden text-[11px] sm:block">{hint}</p>
       </div>
     </div>
   );
@@ -37,7 +37,8 @@ export function StatCards() {
   return (
     <section
       aria-label="Claim statistics"
-      className="shadow-card grid shrink-0 rounded-3xl bg-white sm:grid-cols-2 xl:grid-cols-4"
+      // 1 px gaps over a line-coloured background draw dividers that work for 2 or 4 columns.
+      className="shadow-card bg-line grid shrink-0 grid-cols-2 gap-px overflow-hidden rounded-2xl sm:rounded-3xl xl:grid-cols-4"
     >
       <Stat label="Claims in scope" value={data?.total} hint="Visible to your role" icon={Layers} />
       <Stat label="Open claims" value={data?.open} hint="Awaiting adjudication" icon={FolderOpen} />

@@ -50,7 +50,9 @@ export function PageViewer({ document, files, annotationsByPage, canAnnotate, on
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const containerWidth = useElementWidth(scrollRef);
-  const pageWidth = Math.round(Math.max(280, Math.min(containerWidth - 64, MAX_FIT_WIDTH)) * zoom);
+  // Fit width: smaller side gutters on phones so a page uses (almost) the full screen width.
+  const gutter = containerWidth < 640 ? 24 : 64;
+  const pageWidth = Math.round(Math.max(200, Math.min(containerWidth - gutter, MAX_FIT_WIDTH)) * zoom);
   const { pages } = document;
 
   const heightOf = (page: PageRef) => {

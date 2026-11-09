@@ -77,3 +77,8 @@ export const GRID_TEMPLATE =
   'minmax(150px,1.1fr) minmax(170px,1.3fr) 90px 80px 112px 120px 140px minmax(140px,1fr) 120px 130px 112px';
 
 export const ROW_HEIGHT = 56;
+
+/** Phones and tablets in portrait (< 1024 px): each claim is a stacked card, not an 11-column row. */
+export const CARD_ROW_HEIGHT = 136;
+
+export type GridLayout = 'table' | 'cards';

@@ -51,6 +51,7 @@ Pick a persona on the sign-in screen. The mock backend enforces the same rules o
 5. **Editing:** select a page in the thumbnails, then **Split**, **Rotate**, delete, drag to reorder (or press Alt + ↑/↓). Merge or rename via the document's ⋮ menu. Undo with **Ctrl+Z**, then **Save changes** to watch the job progress. Tick _Simulate failure_ to see the atomic rollback and the safe **Retry**.
 6. **Draft recovery:** make a few edits, refresh the page, and the draft is restored.
 7. **Annotations and comments:** use the highlight/box tool on a page and comment on it. Both are optimistic, and they survive split, merge and reorder because they are keyed by a stable page id.
+8. **Responsive:** narrow the window or use device emulation. Below 1024 px the navigation is icons only and claims become cards with a _Sort by_ control. On phones, the workspace's document list and comments open as slide-in panels.
 
 ---
 
@@ -157,5 +158,5 @@ CI (`.github/workflows/ci.yml`) runs format check, lint, typecheck, unit tests, 
 - The job **simulates** byte-level PDF rewriting. Production would run a queue worker (e.g. qpdf/PDFium), write a new immutable file version, and notify via SSE/WebSocket instead of polling.
 - Demo auth uses a sessionStorage token. Production would use OIDC (e.g. Azure AD) with httpOnly cookies, plus CSP headers.
 - Comments refresh on focus or after a commit. Real-time collaboration (presence, live annotations) would use WebSockets.
-- Layout targets desktop adjuster workstations (≥ 1280 px). The sidebar and comments panel collapse on smaller screens, but there is no dedicated mobile design.
+- Touch works (including drawing annotations), but there is no pinch-to-zoom gesture in the viewer and no offline mode for field adjusters.
 - Not implemented: i18n, server-rendered thumbnails/tiles (an option for very weak devices, see ADR-0002), and Storybook for the UI primitives.

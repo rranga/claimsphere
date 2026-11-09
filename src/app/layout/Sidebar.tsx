@@ -15,6 +15,7 @@ import {
 import { NavLink } from 'react-router';
 import { useCurrentSession, useSession } from '@/features/auth';
 import { cn } from '@/shared/lib/cn';
+import { MEDIA, useMediaQuery } from '@/shared/hooks/useMediaQuery';
 import { Avatar } from '@/shared/ui/Avatar';
 import { Badge } from '@/shared/ui/Badge';
 import { Tooltip } from '@/shared/ui/Tooltip';
@@ -39,11 +40,16 @@ const ROLE_LABEL = {
  * Primary navigation with the two Figma states: expanded (256 px) and minimized (102 px, icons
  * only). In the minimized state every item keeps its accessible name (visually hidden label) and
  * shows it in a tooltip on hover and keyboard focus.
+ *
+ * Responsive: on phones and tablets in portrait (< 1024 px) the sidebar is always the icon rail
+ * (64 px on phones, 102 px on tablets) and the expand toggle is not offered.
  */
 export function Sidebar() {
   const { user } = useCurrentSession();
   const { signOut } = useSession();
-  const [collapsed, toggle] = useSidebarCollapsed();
+  const [userCollapsed, toggle] = useSidebarCollapsed();
+  const compactScreen = useMediaQuery(MEDIA.compact);
+  const collapsed = compactScreen || userCollapsed;
   const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
   const toggleLabel = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
 
@@ -53,10 +59,15 @@ export function Sidebar() {
       data-collapsed={collapsed}
       className={cn(
         'border-line flex shrink-0 flex-col overflow-hidden border-r bg-white transition-[width] duration-200',
-        collapsed ? 'w-[102px]' : 'w-64',
+        collapsed ? 'w-16 sm:w-[102px]' : 'w-64',
       )}
     >
-      <div className={cn('flex items-center pt-9 pb-8', collapsed ? 'flex-col gap-5' : 'gap-1.5 pr-3 pl-6')}>
+      <div
+        className={cn(
+          'flex items-center pt-9 pb-8',
+          collapsed ? 'flex-col gap-5 max-sm:pt-6' : 'gap-1.5 pr-3 pl-6',
+        )}
+      >
         <Hexagon className="text-ink size-7 shrink-0" strokeWidth={2.2} aria-hidden="true" />
         {collapsed ? (
           <span className="sr-only">ClaimSphere</span>
@@ -66,21 +77,23 @@ export function Sidebar() {
             <span className="text-muted mt-1.5 text-[10px]">v0.1</span>
           </>
         )}
-        <Tooltip content={toggleLabel} side="right">
-          <button
-            type="button"
-            onClick={toggle}
-            aria-label={toggleLabel}
-            aria-expanded={!collapsed}
-            aria-controls="primary-sidebar"
-            className={cn(
-              'text-muted hover:bg-brand-50 hover:text-ink shrink-0 rounded-lg p-1',
-              !collapsed && 'ml-auto',
-            )}
-          >
-            <ToggleIcon className="size-5" aria-hidden="true" />
-          </button>
-        </Tooltip>
+        {!compactScreen && (
+          <Tooltip content={toggleLabel} side="right">
+            <button
+              type="button"
+              onClick={toggle}
+              aria-label={toggleLabel}
+              aria-expanded={!collapsed}
+              aria-controls="primary-sidebar"
+              className={cn(
+                'text-muted hover:bg-brand-50 hover:text-ink shrink-0 rounded-lg p-1',
+                !collapsed && 'ml-auto',
+              )}
+            >
+              <ToggleIcon className="size-5" aria-hidden="true" />
+            </button>
+          </Tooltip>
+        )}
       </div>
 
       <nav aria-label="Primary" className={cn('flex-1', collapsed ? 'px-0' : 'px-5')}>

@@ -4,7 +4,8 @@ import type { ClaimQuery, SortField } from '@/shared/api/contracts';
 import { formatNumber } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/Button';
 import { useClaimBlocks } from '../hooks/useClaimBlocks';
-import { ROW_HEIGHT } from './columns';
+import { MEDIA, useMediaQuery } from '@/shared/hooks/useMediaQuery';
+import { CARD_ROW_HEIGHT, ROW_HEIGHT } from './columns';
 import { getNextRowIndex } from '../model/gridKeyboard';
 import { ClaimRow, GridHeader, type RowCallbacks } from './GridParts';
 import { GridEmptyState, GridErrorState } from './GridStates';
@@ -27,12 +28,14 @@ export function VirtualClaimsGrid({ query, onSort, onClearFilters, ...callbacks 
   const [range, setRange] = useState({ start: 0, end: 30 });
   const blocks = useClaimBlocks(query, range.start, range.end);
   const rowCount = blocks.total ?? 0;
+  const layout = useMediaQuery(MEDIA.compact) ? 'cards' : 'table';
+  const rowHeight = layout === 'cards' ? CARD_ROW_HEIGHT : ROW_HEIGHT;
 
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual returns imperative APIs by design; rows are memoized separately.
   const virtualizer = useVirtualizer({
     count: rowCount,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => ROW_HEIGHT,
+    estimateSize: () => rowHeight,
     overscan: 12,
     onChange: (instance) => {
       const items = instance.getVirtualItems();
@@ -41,6 +44,11 @@ export function VirtualClaimsGrid({ query, onSort, onClearFilters, ...callbacks 
       setRange((prev) => (prev.start === start && prev.end === end ? prev : { start, end }));
     },
   });
+
+  // Row height changes when the layout switches (rotate phone, resize window) → re-measure.
+  useEffect(() => {
+    virtualizer.measure();
+  }, [rowHeight, virtualizer]);
 
   // New query → back to the top (the old scroll offset is meaningless for a different result set).
   const queryKey = JSON.stringify(query);
@@ -60,7 +68,7 @@ export function VirtualClaimsGrid({ query, onSort, onClearFilters, ...callbacks 
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const pageRows = Math.floor((scrollRef.current?.clientHeight ?? 600) / ROW_HEIGHT) - 1;
+    const pageRows = Math.floor((scrollRef.current?.clientHeight ?? 600) / rowHeight) - 1;
     const next = getNextRowIndex(event.key, activeIndex, rowCount, pageRows);
     if (next === null) return;
     event.preventDefault();
@@ -87,12 +95,12 @@ export function VirtualClaimsGrid({ query, onSort, onClearFilters, ...callbacks 
         className="min-h-0 flex-1 overflow-auto [overflow-anchor:none]"
         onKeyDown={onKeyDown}
       >
-        <div className="min-w-[1420px]">
-          <GridHeader sortBy={query.sortBy} sortDir={query.sortDir} onSort={onSort} />
+        <div className={layout === 'table' ? 'min-w-[1420px]' : undefined}>
+          {layout === 'table' && <GridHeader sortBy={query.sortBy} sortDir={query.sortDir} onSort={onSort} />}
           <div
             role="rowgroup"
             className="relative"
-            style={{ height: blocks.isInitialLoading ? ROW_HEIGHT * 12 : virtualizer.getTotalSize() }}
+            style={{ height: blocks.isInitialLoading ? rowHeight * 12 : virtualizer.getTotalSize() }}
           >
             {blocks.isInitialLoading
               ? Array.from({ length: 12 }, (_, i) => (
@@ -100,8 +108,9 @@ export function VirtualClaimsGrid({ query, onSort, onClearFilters, ...callbacks 
                     key={i}
                     claim={undefined}
                     index={i}
-                    top={i * ROW_HEIGHT}
+                    top={i * rowHeight}
                     active={false}
+                    layout={layout}
                     {...callbacks}
                     onFocusRow={setActiveIndex}
                   />
@@ -113,6 +122,7 @@ export function VirtualClaimsGrid({ query, onSort, onClearFilters, ...callbacks 
                     index={item.index}
                     top={item.start}
                     active={item.index === activeIndex}
+                    layout={layout}
                     onFocusRow={setActiveIndex}
                     {...callbacks}
                   />
@@ -120,7 +130,7 @@ export function VirtualClaimsGrid({ query, onSort, onClearFilters, ...callbacks 
           </div>
         </div>
       </div>
-      <footer className="border-line text-muted flex flex-wrap items-center justify-between gap-3 border-t px-6 py-3 text-xs">
+      <footer className="border-line text-muted flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t px-4 py-3 text-xs sm:px-6">
         <span aria-live="polite">
           {blocks.total === undefined
             ? 'Loading claims…'

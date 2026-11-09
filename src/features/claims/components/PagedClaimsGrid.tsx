@@ -3,6 +3,7 @@ import { useRef, useState, type KeyboardEvent } from 'react';
 import type { ClaimQuery, SortField } from '@/shared/api/contracts';
 import { claimPageQuery } from '../api/queries';
 import { getNextRowIndex } from '../model/gridKeyboard';
+import { MEDIA, useMediaQuery } from '@/shared/hooks/useMediaQuery';
 import { ClaimRow, GridHeader, type RowCallbacks } from './GridParts';
 import { GridEmptyState, GridErrorState } from './GridStates';
 import { PaginationBar } from './PaginationBar';
@@ -34,6 +35,7 @@ export function PagedClaimsGrid({
   const gridRef = useRef<HTMLDivElement>(null);
   /** Absolute row index (page offset included) so `setActiveIndex` can be passed to memoized rows as-is. */
   const [activeIndex, setActiveIndex] = useState(0);
+  const layout = useMediaQuery(MEDIA.compact) ? 'cards' : 'table';
 
   if (error && !data) return <GridErrorState error={error} onRetry={() => void refetch()} />;
   if (data?.total === 0) return <GridEmptyState onClearFilters={onClearFilters} />;
@@ -63,8 +65,10 @@ export function PagedClaimsGrid({
         className="min-h-0 flex-1 overflow-auto"
         onKeyDown={onKeyDown}
       >
-        <div className={`min-w-[1420px] transition-opacity ${isPlaceholderData ? 'opacity-60' : ''}`}>
-          <GridHeader sortBy={query.sortBy} sortDir={query.sortDir} onSort={onSort} />
+        <div
+          className={`${layout === 'table' ? 'min-w-[1420px]' : ''} transition-opacity ${isPlaceholderData ? 'opacity-60' : ''}`}
+        >
+          {layout === 'table' && <GridHeader sortBy={query.sortBy} sortDir={query.sortDir} onSort={onSort} />}
           <div role="rowgroup">
             {isPending
               ? Array.from({ length: 10 }, (_, i) => (
@@ -73,6 +77,7 @@ export function PagedClaimsGrid({
                     claim={undefined}
                     index={i}
                     active={false}
+                    layout={layout}
                     {...callbacks}
                     onFocusRow={setActiveIndex}
                   />
@@ -83,6 +88,7 @@ export function PagedClaimsGrid({
                     claim={claim}
                     index={offset + i}
                     active={offset + i === tabbableIndex}
+                    layout={layout}
                     onFocusRow={setActiveIndex}
                     {...callbacks}
                   />

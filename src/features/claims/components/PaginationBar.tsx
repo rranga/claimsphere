@@ -19,7 +19,7 @@ export function PaginationBar({ page, pageSize, total, onPageChange, onPageSizeC
   const pill = 'inline-flex size-7 items-center justify-center rounded border text-xs';
 
   return (
-    <footer className="border-line text-muted flex flex-wrap items-center justify-between gap-3 border-t px-6 py-3 text-xs">
+    <footer className="border-line text-muted flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3 text-xs sm:px-6">
       <div className="flex items-center gap-3">
         <span aria-live="polite">
           Showing data {formatNumber(from)} to {formatNumber(to)} of {formatNumber(total)} entries
