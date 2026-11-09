@@ -2,6 +2,8 @@
 
 A claims-adjudication workspace for ABC Insurance, built as the **Senior UI Engineering case study**. It has a landing grid over **25,000 claims** and a document workspace that opens **100 MB – 1 GB** PDFs, where users can edit, split, merge, delete pages, comment and annotate. Role-based access is enforced by the backend and reflected in the UI.
 
+> **Live demo:** https://rranga.github.io/claimsphere/ · **Author:** Rangaprasad
+>
 > **Stack:** React 19 · TypeScript (strict) · Vite · Tailwind CSS v4 · TanStack Query · Redux Toolkit · TanStack Virtual · pdf.js · Radix UI · MSW · Vitest · Playwright · axe-core
 >
 > **Technical report:** [docs/ClaimSphere-Technical-Design.docx](docs/ClaimSphere-Technical-Design.docx) ([PDF](docs/ClaimSphere-Technical-Design.pdf)) covers architecture, design patterns, performance, security, accessibility, coding standards and testing.
@@ -44,14 +46,14 @@ Pick a persona on the sign-in screen. The mock backend enforces the same rules o
 
 ### Things worth trying
 
-1. **Grid:** drag the scrollbar to the middle of 25,000 rows. The footer shows only ~35 rows in the DOM. Switch to **Paginated** to get the Figma-style footer. Use the panel icon next to the logo to switch the sidebar between the Figma **expanded** and **minimized** states. Your choice is remembered; below 1280 px the sidebar starts minimized.
+1. **Grid:** drag the scrollbar to the middle of 25,000 rows. The footer shows only ~35 rows in the DOM. Switch to **Paginated** to get the Figma-style footer. Use the panel icon next to the logo to switch the sidebar between the Figma **expanded** and **minimized** states. Your choice is remembered; between 1024 and 1280 px the sidebar starts minimized, and below 1024 px it is always the icon rail.
 2. **RBAC:** sign in as Marcus (no row actions), then Evano (Edit is visible but disabled, with a reason, on claims assigned to someone else).
 3. **Grid → workspace:** hover a row for about 120 ms and the route chunk, document manifest and first page are prefetched, so the click opens instantly. Press **Back** and the filters, sort and page are restored from the URL.
 4. **1 GB document:** open it and watch the green badge, e.g. _"Fetched 6.6 MB of 1021 MB (0.7%)"_. Jump to page 900; only that page's byte ranges are downloaded.
 5. **Editing:** select a page in the thumbnails, then **Split**, **Rotate**, delete, drag to reorder (or press Alt + ↑/↓). Merge or rename via the document's ⋮ menu. Undo with **Ctrl+Z**, then **Save changes** to watch the job progress. Tick _Simulate failure_ to see the atomic rollback and the safe **Retry**.
 6. **Draft recovery:** make a few edits, refresh the page, and the draft is restored.
 7. **Annotations and comments:** use the highlight/box tool on a page and comment on it. Both are optimistic, and they survive split, merge and reorder because they are keyed by a stable page id.
-8. **Responsive:** narrow the window or use device emulation. Below 1024 px the navigation is icons only and claims become cards with a _Sort by_ control. On phones, the workspace's document list and comments open as slide-in panels.
+8. **Responsive:** narrow the window or use device emulation (or run `npm run dev -- --host` and open the Network URL on a phone). Below 1024 px the navigation is icons only and claims become cards with a _Sort by_ control. On tablets, comments open from a **Comments** button; on phones, the document list (**Pages**) and comments both open as slide-in panels.
 
 ---
 
@@ -114,7 +116,7 @@ MobX was not needed. The split above covers every case with less magic and bette
 
 | Concern                  | Technique                                                                               | Measured (Chromium, dev build)                                        |
 | ------------------------ | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| 25k-row grid DOM         | Virtualization (TanStack Virtual), fixed 56 px rows, overscan 12                        | **~22–35 rows** in the DOM at any scroll position                     |
+| 25k-row grid DOM         | Virtualization (TanStack Virtual), fixed-height rows (56 px, 136 px cards), overscan 12 | **~22–35 rows** in the DOM at any scroll position                     |
 | Grid memory              | 100-row blocks as Query entries, `gcTime` 60 s                                          | bounded; no "infinite scroll" growth                                  |
 | Row re-renders           | `memo` rows, stable callbacks, structural sharing, single dialog host                   | unchanged rows don't re-render                                        |
 | Search                   | 300 ms debounce, server-side                                                            | one request per pause                                                 |
@@ -132,8 +134,8 @@ The sample PDFs are written in a **web-optimized layout**: page dictionaries at 
 - **Unit:** document-operation engine, Redux slice (undo/redo, selection, draft restore), annotation geometry, URL parsing, LRU.
 - **API contract:** RBAC (401/403/404 scoping, `allowedActions`), optimistic concurrency (409), atomic and idempotent jobs, validation (422). These run against the same MSW handlers the app uses.
 - **Component:** RowActions hide/disable rules with React Testing Library.
-- **E2E (Playwright):** virtualization, filtering, RBAC per persona, pagination, split → save job, failure → retry, annotations and comments, read-only workspace.
-- **Accessibility (Playwright + axe-core):** WCAG 2.1 A/AA audit of the sign-in screen, grid and workspace. The suite fails on any violation; currently 0.
+- **E2E (Playwright):** virtualization, filtering, RBAC per persona, pagination, split → save job, failure → retry, annotations and comments, read-only workspace, a short (1366 × 650) laptop screen, the sidebar's expanded/minimized states, and phone (390 × 844) and tablet (768 × 1024) layouts.
+- **Accessibility (Playwright + axe-core):** WCAG 2.1 A/AA audit of the sign-in screen, grid and workspace on desktop, plus the grid and workspace on a phone. The suite fails on any violation; currently 0.
 
 CI (`.github/workflows/ci.yml`) runs format check, lint, typecheck, unit tests, build and e2e. Pre-commit runs ESLint and Prettier on staged files (Husky + lint-staged).
 
@@ -142,6 +144,7 @@ CI (`.github/workflows/ci.yml`) runs format check, lint, typecheck, unit tests, 
 - **Verified:** automated axe-core audit in the e2e suite (0 violations), plus eslint-plugin-jsx-a11y.
 - **Colour contrast:** Figma's light greys and greens were darkened within the same hue so every text token is at least 4.5:1.
 - **Keyboard:** the grid supports arrows, PageUp/PageDown, Home/End and Enter. Thumbnails support arrows, Shift-select, Space and Alt+arrows to move pages. Ctrl+Z / Ctrl+Shift+Z undo and redo. Dialogs and menus are fully keyboard operable.
+- **Responsive and touch:** usable from 390 px wide with no horizontal scrolling; icon-only navigation keeps accessible names and tooltips; side panels become focus-trapped sheets on small screens.
 - **Semantics:** `grid` with `aria-rowcount`/`aria-rowindex` for the virtualized rows, `listbox` for thumbnails, `aria-sort`, live regions for counts, progress and errors, a skip link, visible focus rings, and `prefers-reduced-motion`.
 - **Known gaps:**
   - Document text is canvas-only. Next step: the pdf.js text layer.
