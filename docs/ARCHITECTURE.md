@@ -157,3 +157,26 @@ sequenceDiagram
 - No `dangerouslySetInnerHTML`; comment text renders as text. pdf.js runs with XFA disabled.
 - Untrusted URL params are whitelisted before reaching the API. The server caps `limit`.
 - Production additions: httpOnly cookie sessions (OIDC), CSP, signed short-lived document URLs (SAS/presigned), and audit logging of document operations.
+
+## 9. Scalability
+
+The case study asks for growth in three directions. None of them changes the client's cost per screen.
+
+| Growth                          | Why the design holds                                                                                                                                                                                                                                         | Next step at much larger scale                                                                                         |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| **Record volume** (20k → 2M)    | Sort, filter and search run on the server; the client holds only the blocks in view (~35 rows in the DOM, a few 100-row blocks in memory). The page size is capped at 500 on the server.                                                                     | Database indexes on the sort/filter columns, keyset (cursor) paging instead of `offset`, a search index for free text. |
+| **Document size** (1 GB → more) | The browser downloads only the byte ranges of the pages in view, so cost depends on pages viewed, not file size. Split/merge/reorder are operations on page references, O(pages), never on bytes.                                                            | Linearize on ingestion; serve files from object storage behind a CDN; server-rendered tiles for very weak devices.     |
+| **Concurrent users**            | The API is stateless (bearer token, no server session), so it scales horizontally. Immutable, versioned files are cacheable by a CDN and shared by every viewer.                                                                                             | Autoscale the BFF; cache per-user query results (already done in the mock) in Redis.                                   |
+| **Concurrent operations**       | Optimistic concurrency (document and claim versions → 409), idempotency keys on commits, and atomic jobs mean two adjusters can never silently overwrite each other or apply the same save twice. Long-running work runs on a job queue, not in the request. | Scale queue workers independently; push job progress over SSE/WebSocket instead of polling.                            |
+
+## 10. Fit with the wider platform
+
+The problem statement places this UI inside a larger claims platform. How the build maps to that context:
+
+- **Multi-channel intake.** Every claim records its intake channel (Email, SFTP, Portal, API). It is shown, filterable and part of the API contract. Ingestion itself (parsing mail and SFTP drops, OCR, linearizing PDFs) is a backend pipeline outside the UI (see the system context diagram).
+- **Risk assessment.** Each claim carries a risk score that a risk-assessment service would supply. The grid shows it with the priority, sorts by it, and the KPI cards count high-risk claims (score ≥ 75). A dedicated risk panel with the service's factors would plug into the workspace as another feature module.
+- **Integration with internal and external services** goes through the BFF. The UI depends only on the typed contract in `shared/api/contracts.ts`, so services can be added or replaced behind it without UI changes.
+
+## 11. Scope of "edit" in the document workspace
+
+"Edit" is implemented as **structural editing** of documents: reorder, rotate and delete pages, split and merge documents, rename and delete documents. All of these are undoable and saved atomically, together with page comments and annotations. Changing the content of a PDF page (text editing or redaction) is not in scope. That would be done on the server on an immutable copy (for example with PDFium), with the browser sending the instruction rather than the bytes.
