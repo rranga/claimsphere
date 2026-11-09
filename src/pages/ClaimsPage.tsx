@@ -101,7 +101,7 @@ export function ClaimsPage() {
             <h2 id="claims-heading" className="text-xl font-semibold">
               All Claims
             </h2>
-            <p className="text-success-500 text-sm">Server-side sort, filter & search</p>
+            <p className="text-success-700 text-sm">Server-side sort, filter & search</p>
           </div>
         </div>
         <div className="px-6 pb-4">

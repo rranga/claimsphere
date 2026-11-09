@@ -1,8 +1,11 @@
 @import 'tailwindcss';
 
 /*
- * Design tokens taken from the Figma "CRM Dashboard – Customers List" file.
+ * Design tokens derived from the Figma "CRM Dashboard – Customers List" file.
  * Components consume tokens (bg-brand-600, text-muted…) — never raw hex values.
+ *
+ * Accessibility: Figma's light greys/greens were darkened (same hue) so every text token meets
+ * WCAG 2.1 AA contrast (≥ 4.5:1) on every surface it is used on — verified by axe-core in e2e.
  */
 @theme {
   --font-sans: 'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -15,20 +18,20 @@
   --color-brand-700: #4723c7;
 
   --color-ink: #292d32;
-  --color-muted: #7e84a3;
-  --color-subtle: #b5b7c0;
+  --color-muted: #646a87; /* Figma #9197B3 → 5.3:1 on white, 4.7:1 on page canvas */
+  --color-subtle: #b5b7c0; /* decorative only (icons, placeholders) — never body text */
   --color-line: #eeeeee;
   --color-canvas: #fafbff;
 
   --color-success-50: #e3f8f2;
   --color-success-500: #00b087;
-  --color-success-700: #008767;
+  --color-success-700: #006b52;
   --color-danger-50: #ffe9e9;
-  --color-danger-500: #df0404;
+  --color-danger-500: #c81e1e;
   --color-warning-50: #fff5e0;
   --color-warning-600: #b45309;
   --color-info-50: #e8f1ff;
-  --color-info-600: #1c64f2;
+  --color-info-600: #1a56db;
 
   --shadow-card: 0 10px 60px rgb(226 236 249 / 0.5);
   --animate-fade-in: fade-in 160ms ease-out;

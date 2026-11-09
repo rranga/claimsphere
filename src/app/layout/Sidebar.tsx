@@ -65,11 +65,12 @@ export function Sidebar() {
                 </NavLink>
               ) : (
                 <span
-                  className="text-subtle flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-sm"
+                  className="text-muted flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-sm"
                   title="Out of scope for this case study"
                 >
                   <Icon className="size-5" aria-hidden="true" />
                   <span className="flex-1">{label}</span>
+                  <span className="text-muted rounded bg-gray-100 px-1.5 text-[10px]">Soon</span>
                 </span>
               )}
             </li>

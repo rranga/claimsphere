@@ -5,6 +5,8 @@ const PORT = 4173;
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
+  // Each test drives a real Chromium + pdf.js worker; more workers than this starve CPU and cause timeouts.
+  workers: 2,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',

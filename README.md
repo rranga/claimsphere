@@ -2,7 +2,9 @@
 
 A claims-adjudication workspace for ABC Insurance, built as the **Senior UI Engineering case study**. It has a landing grid over **25,000 claims** and a document workspace that opens **100 MB – 1 GB** PDFs, where users can edit, split, merge, delete pages, comment and annotate. Role-based access is enforced by the backend and reflected in the UI.
 
-> **Stack:** React 19 · TypeScript (strict) · Vite · Tailwind CSS v4 · TanStack Query · Redux Toolkit · TanStack Virtual · pdf.js · Radix UI · MSW · Vitest · Playwright
+> **Stack:** React 19 · TypeScript (strict) · Vite · Tailwind CSS v4 · TanStack Query · Redux Toolkit · TanStack Virtual · pdf.js · Radix UI · MSW · Vitest · Playwright · axe-core
+>
+> **Technical report:** [docs/ClaimSphere-Technical-Design.docx](docs/ClaimSphere-Technical-Design.docx) ([PDF](docs/ClaimSphere-Technical-Design.pdf)) covers architecture, design patterns, performance, security, accessibility, coding standards and testing.
 
 ---
 
@@ -130,8 +132,20 @@ The sample PDFs are written in a **web-optimized layout**: page dictionaries at 
 - **API contract:** RBAC (401/403/404 scoping, `allowedActions`), optimistic concurrency (409), atomic and idempotent jobs, validation (422). These run against the same MSW handlers the app uses.
 - **Component:** RowActions hide/disable rules with React Testing Library.
 - **E2E (Playwright):** virtualization, filtering, RBAC per persona, pagination, split → save job, failure → retry, annotations and comments, read-only workspace.
+- **Accessibility (Playwright + axe-core):** WCAG 2.1 A/AA audit of the sign-in screen, grid and workspace. The suite fails on any violation; currently 0.
 
 CI (`.github/workflows/ci.yml`) runs format check, lint, typecheck, unit tests, build and e2e. Pre-commit runs ESLint and Prettier on staged files (Husky + lint-staged).
+
+## Accessibility (WCAG 2.1 AA)
+
+- **Verified:** automated axe-core audit in the e2e suite (0 violations), plus eslint-plugin-jsx-a11y.
+- **Colour contrast:** Figma's light greys and greens were darkened within the same hue so every text token is at least 4.5:1.
+- **Keyboard:** the grid supports arrows, PageUp/PageDown, Home/End and Enter. Thumbnails support arrows, Shift-select, Space and Alt+arrows to move pages. Ctrl+Z / Ctrl+Shift+Z undo and redo. Dialogs and menus are fully keyboard operable.
+- **Semantics:** `grid` with `aria-rowcount`/`aria-rowindex` for the virtualized rows, `listbox` for thumbnails, `aria-sort`, live regions for counts, progress and errors, a skip link, visible focus rings, and `prefers-reduced-motion`.
+- **Known gaps:**
+  - Document text is canvas-only. Next step: the pdf.js text layer.
+  - Annotations can only be drawn with a pointer.
+  - No manual screen-reader pass has been done yet.
 
 ## Live demo (GitHub Pages)
 

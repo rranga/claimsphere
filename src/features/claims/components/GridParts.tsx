@@ -42,7 +42,7 @@ export function GridHeader({ sortBy, sortDir, onSort }: HeaderProps) {
               key={column.id}
               role="columnheader"
               aria-sort={ariaSort}
-              className={cn('text-subtle px-2 text-sm font-medium', column.align === 'right' && 'text-right')}
+              className={cn('text-muted px-2 text-sm font-medium', column.align === 'right' && 'text-right')}
             >
               {column.sortField ? (
                 <button
@@ -71,7 +71,7 @@ export function GridHeader({ sortBy, sortDir, onSort }: HeaderProps) {
             </div>
           );
         })}
-        <div role="columnheader" className="text-subtle px-2 text-right text-sm font-medium">
+        <div role="columnheader" className="text-muted px-2 text-right text-sm font-medium">
           Actions
         </div>
       </div>

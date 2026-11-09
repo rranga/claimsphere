@@ -16,7 +16,7 @@ export const USERS: User[] = [
     title: 'Claims Supervisor',
     role: 'supervisor',
     region: 'EMEA',
-    avatarColor: '#0E9F6E',
+    avatarColor: '#047857',
   },
   {
     id: 'u-marcus',
@@ -24,7 +24,7 @@ export const USERS: User[] = [
     title: 'Claims Auditor',
     role: 'viewer',
     region: 'AMER',
-    avatarColor: '#D97706',
+    avatarColor: '#B45309',
   },
   {
     id: 'u-sofia',
@@ -56,7 +56,7 @@ export const USERS: User[] = [
     title: 'Claims Adjuster',
     role: 'adjuster',
     region: 'AMER',
-    avatarColor: '#0891B2',
+    avatarColor: '#0E7490',
   },
   {
     id: 'u-aiko',
@@ -64,7 +64,7 @@ export const USERS: User[] = [
     title: 'Claims Adjuster',
     role: 'adjuster',
     region: 'APAC',
-    avatarColor: '#DB2777',
+    avatarColor: '#BE185D',
   },
 ];
 

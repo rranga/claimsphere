@@ -19,11 +19,11 @@ export function AppProviders({ children }: { children: ReactNode }) {
         <AuthProvider>
           <TooltipProvider delayDuration={300}>
             {children}
-            <Toaster position="top-right" richColors closeButton />
+            <Toaster position="bottom-center" richColors closeButton />
           </TooltipProvider>
         </AuthProvider>
       </ReduxProvider>
-      {import.meta.env.DEV && <ReactQueryDevtools buttonPosition="bottom-right" />}
+      {import.meta.env.DEV && <ReactQueryDevtools buttonPosition="top-right" />}
     </QueryClientProvider>
   );
 }
