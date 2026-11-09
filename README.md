@@ -44,7 +44,7 @@ Pick a persona on the sign-in screen. The mock backend enforces the same rules o
 
 ### Things worth trying
 
-1. **Grid:** drag the scrollbar to the middle of 25,000 rows. The footer shows only ~35 rows in the DOM. Switch to **Paginated** to get the Figma-style footer.
+1. **Grid:** drag the scrollbar to the middle of 25,000 rows. The footer shows only ~35 rows in the DOM. Switch to **Paginated** to get the Figma-style footer. Use the panel icon next to the logo to switch the sidebar between the Figma **expanded** and **minimized** states. Your choice is remembered; below 1280 px the sidebar starts minimized.
 2. **RBAC:** sign in as Marcus (no row actions), then Evano (Edit is visible but disabled, with a reason, on claims assigned to someone else).
 3. **Grid → workspace:** hover a row for about 120 ms and the route chunk, document manifest and first page are prefetched, so the click opens instantly. Press **Back** and the filters, sort and page are restored from the URL.
 4. **1 GB document:** open it and watch the green badge, e.g. _"Fetched 6.6 MB of 1021 MB (0.7%)"_. Jump to page 900; only that page's byte ranges are downloaded.

@@ -8,6 +8,8 @@ import {
   LayoutDashboard,
   LifeBuoy,
   LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
   Settings,
 } from 'lucide-react';
 import { NavLink } from 'react-router';
@@ -15,6 +17,8 @@ import { useCurrentSession, useSession } from '@/features/auth';
 import { cn } from '@/shared/lib/cn';
 import { Avatar } from '@/shared/ui/Avatar';
 import { Badge } from '@/shared/ui/Badge';
+import { Tooltip } from '@/shared/ui/Tooltip';
+import { useSidebarCollapsed } from './useSidebarCollapsed';
 
 const NAV = [
   { to: '/claims', label: 'Claims', icon: FileStack, enabled: true },
@@ -31,82 +35,152 @@ const ROLE_LABEL = {
   admin: 'Admin',
 } as const;
 
+/**
+ * Primary navigation with the two Figma states: expanded (256 px) and minimized (102 px, icons
+ * only). In the minimized state every item keeps its accessible name (visually hidden label) and
+ * shows it in a tooltip on hover and keyboard focus.
+ */
 export function Sidebar() {
   const { user } = useCurrentSession();
   const { signOut } = useSession();
+  const [collapsed, toggle] = useSidebarCollapsed();
+  const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
+  const toggleLabel = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
 
   return (
-    <aside className="border-line hidden w-64 shrink-0 flex-col border-r bg-white lg:flex">
-      <div className="flex items-center gap-2 px-7 pt-9 pb-10">
-        <Hexagon className="text-ink size-8" strokeWidth={2.2} aria-hidden="true" />
-        <span className="text-2xl font-semibold tracking-tight">ClaimSphere</span>
-        <span className="text-muted mt-2 text-[10px]">v0.1</span>
+    <aside
+      id="primary-sidebar"
+      data-collapsed={collapsed}
+      className={cn(
+        'border-line flex shrink-0 flex-col overflow-hidden border-r bg-white transition-[width] duration-200',
+        collapsed ? 'w-[102px]' : 'w-64',
+      )}
+    >
+      <div className={cn('flex items-center pt-9 pb-8', collapsed ? 'flex-col gap-5' : 'gap-1.5 pr-3 pl-6')}>
+        <Hexagon className="text-ink size-7 shrink-0" strokeWidth={2.2} aria-hidden="true" />
+        {collapsed ? (
+          <span className="sr-only">ClaimSphere</span>
+        ) : (
+          <>
+            <span className="text-xl font-semibold tracking-tight">ClaimSphere</span>
+            <span className="text-muted mt-1.5 text-[10px]">v0.1</span>
+          </>
+        )}
+        <Tooltip content={toggleLabel} side="right">
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={toggleLabel}
+            aria-expanded={!collapsed}
+            aria-controls="primary-sidebar"
+            className={cn(
+              'text-muted hover:bg-brand-50 hover:text-ink shrink-0 rounded-lg p-1',
+              !collapsed && 'ml-auto',
+            )}
+          >
+            <ToggleIcon className="size-5" aria-hidden="true" />
+          </button>
+        </Tooltip>
       </div>
 
-      <nav aria-label="Primary" className="flex-1 px-5">
-        <ul className="grid gap-2">
+      <nav aria-label="Primary" className={cn('flex-1', collapsed ? 'px-0' : 'px-5')}>
+        <ul className={cn('grid gap-2', collapsed && 'justify-items-center')}>
           {NAV.map(({ to, label, icon: Icon, enabled }) => (
             <li key={to}>
-              {enabled ? (
-                <NavLink
-                  to={to}
-                  className={({ isActive }) =>
-                    cn(
-                      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
-                      isActive
-                        ? 'bg-brand-600 text-white shadow-md'
-                        : 'text-muted hover:bg-brand-50 hover:text-ink',
-                    )
-                  }
-                >
-                  <Icon className="size-5" aria-hidden="true" />
-                  <span className="flex-1">{label}</span>
-                  <ChevronRight className="size-4" aria-hidden="true" />
-                </NavLink>
-              ) : (
-                <span
-                  className="text-muted flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-sm"
-                  title="Out of scope for this case study"
-                >
-                  <Icon className="size-5" aria-hidden="true" />
-                  <span className="flex-1">{label}</span>
-                  <span className="text-muted rounded bg-gray-100 px-1.5 text-[10px]">Soon</span>
-                </span>
-              )}
+              <Tooltip content={collapsed ? (enabled ? label : `${label} (coming soon)`) : null} side="right">
+                {enabled ? (
+                  <NavLink
+                    to={to}
+                    // String className (not a function) so it survives the Tooltip's Slot merge;
+                    // the active state is styled from the aria-current="page" NavLink sets.
+                    className={cn(
+                      'text-muted hover:bg-brand-50 hover:text-ink flex items-center rounded-lg text-sm transition-colors',
+                      'aria-[current=page]:bg-brand-600 aria-[current=page]:text-white aria-[current=page]:shadow-md',
+                      'aria-[current=page]:hover:bg-brand-700 aria-[current=page]:hover:text-white',
+                      collapsed ? 'size-11 justify-center' : 'gap-3 px-3 py-2.5',
+                    )}
+                  >
+                    <Icon className="size-5" aria-hidden="true" />
+                    <span className={collapsed ? 'sr-only' : 'flex-1'}>{label}</span>
+                    {!collapsed && <ChevronRight className="size-4" aria-hidden="true" />}
+                  </NavLink>
+                ) : (
+                  <span
+                    // Disabled-link pattern: focusable, so keyboard users also learn it is "coming soon".
+                    role="link"
+                    tabIndex={0}
+                    aria-disabled="true"
+                    className={cn(
+                      'text-muted flex cursor-not-allowed items-center rounded-lg text-sm',
+                      collapsed ? 'size-11 justify-center' : 'gap-3 px-3 py-2.5',
+                    )}
+                    title={collapsed ? undefined : 'Out of scope for this case study'}
+                  >
+                    <Icon className="size-5" aria-hidden="true" />
+                    <span className={collapsed ? 'sr-only' : 'flex-1'}>
+                      {label}
+                      {collapsed && ' (coming soon)'}
+                    </span>
+                    {!collapsed && (
+                      <span className="text-muted rounded bg-gray-100 px-1.5 text-[10px]">Soon</span>
+                    )}
+                  </span>
+                )}
+              </Tooltip>
             </li>
           ))}
         </ul>
       </nav>
 
-      <div className="to-brand-600 m-5 rounded-2xl bg-gradient-to-br from-[#eaabf0] p-4 text-center text-xs text-white">
-        <p className="font-medium">Demo tip</p>
-        <p className="mt-1 opacity-90">
-          Sign in with different roles to see RBAC change the UI — and the data.
-        </p>
-      </div>
+      {!collapsed && (
+        <div className="to-brand-600 m-5 rounded-2xl bg-gradient-to-br from-[#eaabf0] p-4 text-center text-xs text-white">
+          <p className="font-medium">Demo tip</p>
+          <p className="mt-1 opacity-90">
+            Sign in with different roles to see RBAC change the UI — and the data.
+          </p>
+        </div>
+      )}
 
       <DropdownMenu.Root>
-        <DropdownMenu.Trigger className="hover:bg-canvas mx-4 mb-6 flex items-center gap-3 rounded-xl p-2 text-left">
-          <Avatar name={user.name} color={user.avatarColor} />
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-medium">{user.name}</span>
-            <span className="text-muted flex items-center gap-1.5 text-xs">
-              {user.title}
-              <Badge tone="brand" className="h-4 px-1 text-[10px]">
-                {ROLE_LABEL[user.role]}
-              </Badge>
-            </span>
-          </span>
-          <ChevronDown className="text-muted size-4" aria-hidden="true" />
-        </DropdownMenu.Trigger>
+        <Tooltip content={collapsed ? `${user.name} · ${ROLE_LABEL[user.role]}` : null} side="right">
+          {/* No aria-label: the visible text names the button (WCAG 2.5.3 Label in Name). */}
+          <DropdownMenu.Trigger
+            className={cn(
+              'hover:bg-canvas mb-6 flex items-center rounded-xl p-2 text-left',
+              collapsed ? 'mx-auto' : 'mx-4 gap-3',
+            )}
+          >
+            <Avatar name={user.name} color={user.avatarColor} />
+            {collapsed && (
+              <span className="sr-only">
+                {user.name}, {ROLE_LABEL[user.role]} — account menu
+              </span>
+            )}
+            {!collapsed && (
+              <>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">{user.name}</span>
+                  <span className="text-muted flex items-center gap-1.5 text-xs">
+                    {user.title}
+                    <Badge tone="brand" className="h-4 px-1 text-[10px]">
+                      {ROLE_LABEL[user.role]}
+                    </Badge>
+                  </span>
+                </span>
+                <ChevronDown className="text-muted size-4" aria-hidden="true" />
+              </>
+            )}
+          </DropdownMenu.Trigger>
+        </Tooltip>
         <DropdownMenu.Portal>
           <DropdownMenu.Content
-            side="top"
-            align="start"
+            side={collapsed ? 'right' : 'top'}
+            align={collapsed ? 'end' : 'start'}
+            sideOffset={8}
             className="border-line z-30 min-w-56 rounded-xl border bg-white p-1.5 shadow-xl"
           >
             <DropdownMenu.Label className="text-muted px-2 py-1 text-xs">
-              {user.region} · {ROLE_LABEL[user.role]}
+              {user.name} · {user.region} · {ROLE_LABEL[user.role]}
             </DropdownMenu.Label>
             <DropdownMenu.Item
               onSelect={signOut}
