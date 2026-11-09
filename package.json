@@ -5,7 +5,7 @@
   "description": "ClaimSphere – claims adjudication workspace: 20k+ record grid, RBAC, and a large-document (100 MB–1 GB) workspace.",
   "type": "module",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.18"
   },
   "scripts": {
     "dev": "vite",

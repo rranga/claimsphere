@@ -4,7 +4,7 @@ A claims-adjudication workspace for ABC Insurance, built as the **Senior UI Engi
 
 > **Live demo:** https://rranga.github.io/claimsphere/ · **Author:** Rangaprasad
 >
-> **Stack:** React 19 · TypeScript (strict) · Vite · Tailwind CSS v4 · TanStack Query · Redux Toolkit · TanStack Virtual · pdf.js · Radix UI · MSW · Vitest · Playwright · axe-core
+> **Stack:** React 19 · TypeScript (strict) · Vite · Tailwind CSS v4 · React Router · TanStack Query · Redux Toolkit · TanStack Virtual · pdf.js · Radix UI · Zod · MSW · Vitest · Playwright · axe-core
 >
 > **Technical report:** [docs/ClaimSphere-Technical-Design.docx](docs/ClaimSphere-Technical-Design.docx) ([PDF](docs/ClaimSphere-Technical-Design.pdf)) covers architecture, design patterns, performance, security, accessibility, coding standards and testing.
 
@@ -13,7 +13,7 @@ A claims-adjudication workspace for ABC Insurance, built as the **Senior UI Engi
 ## Quick start
 
 ```bash
-nvm use                 # Node 24 (see .nvmrc; Node ≥ 22 works)
+nvm use                 # Node 24 (see .nvmrc; Node ≥ 22.18 works)
 npm install
 npm run dev             # http://localhost:5173
 ```
@@ -24,7 +24,7 @@ Optional: generate genuinely large documents (they are git-ignored, so this take
 npm run generate:docs -- --preset large   # 250 MB + 1 GB PDFs
 ```
 
-Restart `npm run dev` after generating. Every 4th claim (`c-00001`, `c-00005`, …) then gets a large document attached.
+Reload the app after generating; the mock backend discovers them at runtime. Every 4th claim (`c-00001`, `c-00005`, …) then gets a large document attached.
 
 | Command                 | What it does                                            |
 | ----------------------- | ------------------------------------------------------- |
@@ -37,19 +37,19 @@ Restart `npm run dev` after generating. Every 4th claim (`c-00001`, `c-00005`, �
 
 Pick a persona on the sign-in screen. The mock backend enforces the same rules on every request.
 
-| Persona       | Role             | Data scope  | Can                                                    |
-| ------------- | ---------------- | ----------- | ------------------------------------------------------ |
-| Evano Morales | Adjuster         | EMEA        | Edit **own** claims, edit documents, comment, annotate |
-| Priya Raman   | Supervisor       | EMEA        | Edit + **assign** any open claim in the region         |
-| Marcus Lee    | Viewer (auditor) | All regions | Read-only everywhere                                   |
-| Sofia Alvarez | Admin            | All regions | Everything, including **delete**                       |
+| Persona       | Role             | Data scope  | Can                                                                                      |
+| ------------- | ---------------- | ----------- | ---------------------------------------------------------------------------------------- |
+| Evano Morales | Adjuster         | EMEA        | Edit and annotate **own** claims and their documents; comment on any claim in the region |
+| Priya Raman   | Supervisor       | EMEA        | Edit + **assign** any open claim in the region                                           |
+| Marcus Lee    | Viewer (auditor) | All regions | Read-only everywhere                                                                     |
+| Sofia Alvarez | Admin            | All regions | Everything, including **delete**                                                         |
 
 ### Things worth trying
 
 1. **Grid:** drag the scrollbar to the middle of 25,000 rows. The footer shows only ~35 rows in the DOM. Switch to **Paginated** to get the Figma-style footer. Use the panel icon next to the logo to switch the sidebar between the Figma **expanded** and **minimized** states. Your choice is remembered; between 1024 and 1280 px the sidebar starts minimized, and below 1024 px it is always the icon rail.
 2. **RBAC:** sign in as Marcus (no row actions), then Evano (Edit is visible but disabled, with a reason, on claims assigned to someone else).
 3. **Grid → workspace:** hover a row for about 120 ms and the route chunk, document manifest and first page are prefetched, so the click opens instantly. Press **Back** and the filters, sort and page are restored from the URL.
-4. **1 GB document:** open it and watch the green badge, e.g. _"Fetched 6.6 MB of 1021 MB (0.7%)"_. Jump to page 900; only that page's byte ranges are downloaded.
+4. **1 GB document** (after generating the large preset; the live demo has the 250 MB one): open it and watch the green badge, e.g. _"Fetched 6.6 MB of 1021 MB (0.7%)"_. Jump to page 900; only that page's byte ranges are downloaded.
 5. **Editing:** select a page in the thumbnails, then **Split**, **Rotate**, delete, drag to reorder (or press Alt + ↑/↓). Merge or rename via the document's ⋮ menu. Undo with **Ctrl+Z**, then **Save changes** to watch the job progress. Tick _Simulate failure_ to see the atomic rollback and the safe **Retry**.
 6. **Draft recovery:** make a few edits, refresh the page, and the draft is restored.
 7. **Annotations and comments:** use the highlight/box tool on a page and comment on it. Both are optimistic, and they survive split, merge and reorder because they are keyed by a stable page id.
@@ -114,16 +114,16 @@ MobX was not needed. The split above covers every case with less magic and bette
 
 ## Performance
 
-| Concern                  | Technique                                                                               | Measured (Chromium, dev build)                                        |
-| ------------------------ | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| 25k-row grid DOM         | Virtualization (TanStack Virtual), fixed-height rows (56 px, 136 px cards), overscan 12 | **~22–35 rows** in the DOM at any scroll position                     |
-| Grid memory              | 100-row blocks as Query entries, `gcTime` 60 s                                          | bounded; no "infinite scroll" growth                                  |
-| Row re-renders           | `memo` rows, stable callbacks, structural sharing, single dialog host                   | unchanged rows don't re-render                                        |
-| Search                   | 300 ms debounce, server-side                                                            | one request per pause                                                 |
-| 1 GB PDF first page      | Custom Range transport, 256 KB chunks, `disableAutoFetch`                               | **< 2 s**, **6.6 MB** fetched                                         |
-| Jump to page 900 of 1500 | Only that page's ranges                                                                 | **+9.8 MB** (16.4 MB total, 1.6%)                                     |
-| Page rendering           | 60 ms scroll-idle debounce, render cancellation, `canvas.width = 0` on unmount, DPR ≤ 2 | off-screen pages hold no bitmaps                                      |
-| Bundles                  | Lazy workspace route + lazy dialogs; pdf.js split                                       | initial app JS **~74 KB gz** (+ React vendor); pdf.js loads on demand |
+| Concern                  | Technique                                                                               | Measured (Chromium)                                                                           |
+| ------------------------ | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 25k-row grid DOM         | Virtualization (TanStack Virtual), fixed-height rows (56 px, 136 px cards), overscan 12 | **~22–35 rows** in the DOM at any scroll position                                             |
+| Grid memory              | 100-row blocks as Query entries, `gcTime` 60 s                                          | bounded; no "infinite scroll" growth                                                          |
+| Row re-renders           | `memo` rows, stable callbacks, structural sharing, single dialog host                   | unchanged rows don't re-render                                                                |
+| Search                   | 300 ms debounce, server-side                                                            | one request per pause                                                                         |
+| 1 GB PDF first page      | Custom Range transport, 256 KB chunks, `disableAutoFetch`                               | **< 2 s**, **6.6 MB** fetched                                                                 |
+| Jump to page 900 of 1500 | Only that page's ranges                                                                 | **+9.8 MB** (16.4 MB total, 1.6%)                                                             |
+| Page rendering           | 60 ms scroll-idle debounce, render cancellation, `canvas.width = 0` on unmount, DPR ≤ 2 | off-screen pages hold no bitmaps                                                              |
+| Bundles                  | Lazy workspace route + lazy dialogs; pdf.js split                                       | initial app JS **~76 KB gz** in the production build (+ React vendor); pdf.js loads on demand |
 
 The sample PDFs are written in a **web-optimized layout**: page dictionaries at the head, images after, as `qpdf --linearize`-style tools produce. With an interleaved layout, pdf.js has to touch a chunk next to every preceding page to locate page _N_. Measured: 152 MB vs 9.8 MB to jump to 60% of a 250 MB file. **In production, the ingestion pipeline should linearize documents** (see [ADR-0002](docs/adr/0002-large-documents-range-loading.md)).
 
