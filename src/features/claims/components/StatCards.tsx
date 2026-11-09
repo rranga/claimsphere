@@ -14,8 +14,8 @@ interface StatProps {
 
 function Stat({ label, value, hint, icon: Icon }: StatProps) {
   return (
-    <div className="not-first:border-line flex items-center gap-4 px-6 py-5 md:not-first:border-l">
-      <span className="bg-success-50 text-success-500 flex size-14 shrink-0 items-center justify-center rounded-full">
+    <div className="not-first:border-line short:py-3 flex items-center gap-4 px-6 py-5 md:not-first:border-l">
+      <span className="bg-success-50 text-success-500 short:size-11 flex size-14 shrink-0 items-center justify-center rounded-full">
         <Icon className="size-6" aria-hidden="true" />
       </span>
       <div>
@@ -37,7 +37,7 @@ export function StatCards() {
   return (
     <section
       aria-label="Claim statistics"
-      className="shadow-card grid rounded-3xl bg-white sm:grid-cols-2 xl:grid-cols-4"
+      className="shadow-card grid shrink-0 rounded-3xl bg-white sm:grid-cols-2 xl:grid-cols-4"
     >
       <Stat label="Claims in scope" value={data?.total} hint="Visible to your role" icon={Layers} />
       <Stat label="Open claims" value={data?.open} hint="Awaiting adjudication" icon={FolderOpen} />

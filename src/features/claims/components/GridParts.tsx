@@ -71,7 +71,11 @@ export function GridHeader({ sortBy, sortDir, onSort }: HeaderProps) {
             </div>
           );
         })}
-        <div role="columnheader" className="text-muted px-2 text-right text-sm font-medium">
+        {/* Actions are pinned to the right edge so they stay reachable while the grid scrolls sideways. */}
+        <div
+          role="columnheader"
+          className="text-muted sticky right-0 flex items-center justify-end self-stretch bg-white px-2 text-right text-sm font-medium shadow-[-10px_0_10px_-10px_rgba(41,45,50,0.25)]"
+        >
           Actions
         </div>
       </div>
@@ -175,7 +179,10 @@ export const ClaimRow = memo(function ClaimRow({
           {column.cell(claim)}
         </div>
       ))}
-      <div role="gridcell" className="px-2">
+      <div
+        role="gridcell"
+        className="group-focus-visible:bg-brand-50 sticky right-0 flex h-full items-center justify-end bg-white px-2 shadow-[-10px_0_10px_-10px_rgba(41,45,50,0.25)] group-hover:bg-[#f9f8ff]"
+      >
         <RowActions claim={claim} onAction={onAction} />
       </div>
     </div>

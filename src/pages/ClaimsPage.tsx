@@ -79,11 +79,12 @@ export function ClaimsPage() {
 
   const callbacks = { query, onOpen, onPrefetch, onAction, onSort, onClearFilters };
 
+  // The page scrolls instead of clipping when the window is too short for header + KPIs + grid.
   return (
-    <div className="flex h-full flex-col gap-6 overflow-hidden px-6 py-6 lg:px-10 lg:py-8">
-      <header className="flex flex-wrap items-end justify-between gap-2">
+    <div className="short:gap-4 short:py-4 flex h-full flex-col gap-6 overflow-y-auto px-6 py-6 lg:px-10 lg:py-8">
+      <header className="flex shrink-0 flex-wrap items-end justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-medium">Hello {user.name.split(' ')[0]} 👋🏼,</h1>
+          <h1 className="short:text-xl text-2xl font-medium">Hello {user.name.split(' ')[0]} 👋🏼,</h1>
           <p className="text-muted mt-1 text-sm">
             {user.title} · {user.region} region
           </p>
@@ -94,9 +95,9 @@ export function ClaimsPage() {
 
       <section
         aria-labelledby="claims-heading"
-        className="shadow-card flex min-h-[460px] flex-1 flex-col overflow-hidden rounded-3xl bg-white"
+        className="shadow-card short:min-h-[360px] flex min-h-[460px] flex-1 flex-col overflow-hidden rounded-3xl bg-white"
       >
-        <div className="flex flex-wrap items-center justify-between gap-4 px-6 pt-6 pb-4">
+        <div className="short:pt-4 short:pb-3 flex flex-wrap items-center justify-between gap-4 px-6 pt-6 pb-4">
           <div>
             <h2 id="claims-heading" className="text-xl font-semibold">
               All Claims

@@ -40,6 +40,18 @@ test.describe('claims grid', () => {
     await expect(page.getByRole('button', { name: /delete claim/i })).toHaveCount(0);
   });
 
+  test('short laptop screens: footer and row actions stay visible', async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 650 });
+    await signInAs(page, /Priya Raman/);
+    const footer = (await page.getByText(/^Showing .* claims$/).boundingBox())!;
+    expect(footer.y + footer.height).toBeLessThanOrEqual(650); // no clipping, no page scroll needed
+
+    // Actions column is pinned: reachable without scrolling the 11-column grid sideways.
+    const actions = (await page.locator('[data-row-index="0"] [role="gridcell"]').last().boundingBox())!;
+    expect(actions.x + actions.width).toBeLessThanOrEqual(1366);
+    await expect(page.getByRole('button', { name: 'Assign claim' }).first()).toBeInViewport();
+  });
+
   test('paginated mode mirrors the Figma footer', async ({ page }) => {
     await signInAs(page, /Sofia Alvarez/);
     await page.getByRole('radio', { name: 'Paginated' }).click();

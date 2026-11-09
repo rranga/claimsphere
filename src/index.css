@@ -57,6 +57,9 @@
   }
 }
 
+/* Short viewports (laptops, browser zoom): compact vertical rhythm so the grid footer stays on screen. */
+@custom-variant short (@media (max-height: 820px));
+
 @layer base {
   html,
   body,
